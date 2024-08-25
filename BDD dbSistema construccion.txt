@@ -1,0 +1,256 @@
+-- Crear la base de datos
+CREATE DATABASE dbSistema;
+
+-- Tabla BRANDS
+CREATE TABLE BRANDS (
+    BRAND_ID INT NOT NULL PRIMARY KEY,
+    BRAND_NAME VARCHAR(255)
+);
+
+-- Tabla CATEGORIES
+CREATE TABLE CATEGORIES (
+    CATEGORY_ID INT NOT NULL PRIMARY KEY,
+    CATEGORY_NAME VARCHAR(255)
+);
+
+-- Tabla PRODUCTS
+CREATE TABLE PRODUCTS (
+    PRODUCT_ID INT NOT NULL PRIMARY KEY,
+    PRODUCT_NAME VARCHAR(255),
+    BRAND_ID INT,
+    CATEGORY_ID INT,
+    MODEL_YEAR SMALLINT NOT NULL,
+    LIST_PRICE DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (BRAND_ID) REFERENCES BRANDS(BRAND_ID),
+    FOREIGN KEY (CATEGORY_ID) REFERENCES CATEGORIES(CATEGORY_ID)
+);
+
+-- Tabla STORES
+CREATE TABLE STORES (
+    STORES_ID INT NOT NULL PRIMARY KEY,
+    STORES_NAME VARCHAR(255),
+    PHONE VARCHAR(25),
+    EMAIL VARCHAR(255),
+    STREET VARCHAR(255),
+    CITY VARCHAR(50),
+    STATE VARCHAR(25),
+    ZIP_CODE VARCHAR(5)
+);
+
+-- Tabla STAFF
+CREATE TABLE STAFF (
+    STAFFID INT NOT NULL PRIMARY KEY,
+    FIRSTName VARCHAR(50) NOT NULL,
+    LASTName VARCHAR(50) NOT NULL,
+    EMAIL VARCHAR(255) NOT NULL,
+    PHONE VARCHAR(25),
+    ACTIVE TINYINT NOT NULL,
+    STORE_ID INT NOT NULL,
+    MANAGER_ID INT,
+    FOREIGN KEY (STORE_ID) REFERENCES STORES(STORES_ID),
+    FOREIGN KEY (MANAGER_ID) REFERENCES STAFF(STAFFID)
+);
+
+-- Tabla SYSTEMUSER
+CREATE TABLE SYSTEMUSER (
+    UserID VARCHAR(10) NOT NULL PRIMARY KEY,
+    USUARIO VARCHAR(50) NOT NULL,
+    PASS VARCHAR(10) NOT NULL,
+    ROLL VARCHAR(20),
+    STAFF_ID INT,
+    FOREIGN KEY (STAFF_ID) REFERENCES STAFF(STAFFID)
+);
+
+
+-- Tabla CUSTOMERS
+CREATE TABLE CUSTOMERS (
+    CUSTOMER_ID INT NOT NULL PRIMARY KEY,
+    FIRST_NAME VARCHAR(255),
+    LAST_NAME VARCHAR(255) NOT NULL,
+    PHONE VARCHAR(25),
+    EMAIL VARCHAR(255) NOT NULL,
+    STREET VARCHAR(255),
+    CITY VARCHAR(50),
+    STATE VARCHAR(25),
+    ZIP_CODE VARCHAR(5)
+);
+
+-- Tabla ORDERS
+CREATE TABLE ORDERS (
+    ORDER_ID INT NOT NULL PRIMARY KEY,
+    CUSTOMER_ID INT,
+    ORDER_STATUS TINYINT NOT NULL,
+    ORDER_DATE DATE NOT NULL,
+    REQUIRED_DATE DATE NOT NULL,
+    SHIPPED_DATE DATE,
+    STORE_ID INT NOT NULL,
+    SATAFF_ID INT NOT NULL,
+    FOREIGN KEY (CUSTOMER_ID) REFERENCES CUSTOMERS(CUSTOMER_ID),
+    FOREIGN KEY (STORE_ID) REFERENCES STORES(STORES_ID),
+    FOREIGN KEY (SATAFF_ID) REFERENCES STAFF(STAFFID)
+);
+
+-- Tabla ORDERS_ITEMS
+CREATE TABLE ORDERS_ITEMS (
+    ORDER_ID INT NOT NULL,
+    ITEM_ID INT NOT NULL,
+    PRODUCT_ID INT NOT NULL,
+    QUANTITY INT NOT NULL,
+    LIST_PRICE DECIMAL(10, 2) NOT NULL,
+    DISCOUNT DECIMAL(4, 2),
+    PRIMARY KEY (ORDER_ID, ITEM_ID),
+    FOREIGN KEY (ORDER_ID) REFERENCES ORDERS(ORDER_ID),
+    FOREIGN KEY (PRODUCT_ID) REFERENCES PRODUCTS(PRODUCT_ID)
+);
+
+-- Tabla STOCKS
+CREATE TABLE STOCKS (
+    STORES_ID INT NOT NULL,
+    PRODUCT_ID INT NOT NULL,
+    QUANTITY INT,
+    PRIMARY KEY (STORES_ID, PRODUCT_ID),
+    FOREIGN KEY (STORES_ID) REFERENCES STORES(STORES_ID),
+    FOREIGN KEY (PRODUCT_ID) REFERENCES PRODUCTS(PRODUCT_ID)
+);
+
+-- Insertar registros en BRANDS
+INSERT INTO BRANDS (BRAND_ID, BRAND_NAME) VALUES
+(1, 'Sony'),
+(2, 'Samsung'),
+(3, 'LG'),
+(4, 'Apple'),
+(5, 'Dell'); 
+
+-- Insertar registros en CATEGORIES
+INSERT INTO CATEGORIES (CATEGORY_ID, CATEGORY_NAME) VALUES
+(1, 'Electronics'),
+(2, 'Home Appliances'),
+(3, 'Computers'),
+(4, 'Mobile Phones'),
+(5, 'Accessories');
+
+-- Insertar registros en PRODUCTS
+INSERT INTO PRODUCTS (PRODUCT_ID, PRODUCT_NAME, BRAND_ID, CATEGORY_ID, MODEL_YEAR, LIST_PRICE) VALUES
+(1, 'Sony Bravia TV', 1, 1, 2024, 499.99),
+(2, 'Samsung Galaxy S23', 2, 4, 2024, 899.99),
+(3, 'LG Washing Machine', 3, 2, 2024, 299.99),
+(4, 'Apple MacBook Pro', 4, 3, 2024, 1999.99),
+(5, 'Dell XPS 15', 5, 3, 2024, 1499.99);
+
+-- Insertar registros en STORES
+INSERT INTO STORES (STORES_ID, STORES_NAME, PHONE, EMAIL, STREET, CITY, STATE, ZIP_CODE) VALUES
+(1, 'ElectroStore Quito', '0981-666-777', 'info@electrostorequito.com', 'Av. De Los Shyris 303', 'Quito', 'Pichincha', '17015'),
+(2, 'TechWorld Guayaquil', '0981-777-888', 'contact@techworldguayaquil.com', 'Av. 9 de Octubre 404', 'Guayaquil', 'Guayas', '09015'),
+(3, 'GadgetZone Cuenca', '0981-888-999', 'support@gadgetzonecuenca.com', 'Calle 10 de Agosto 505', 'Cuenca', 'Azuay', '01015');
+
+-- Insertar registros en STOCKS
+INSERT INTO STOCKS (STORES_ID, PRODUCT_ID, QUANTITY) VALUES
+(1, 1, 50),
+(1, 2, 30),
+(2, 3, 20),
+(2, 4, 15),
+(3, 5, 25);
+
+-- Insertar registros en CUSTOMERS
+INSERT INTO CUSTOMERS (CUSTOMER_ID, FIRST_NAME, LAST_NAME, PHONE, EMAIL, STREET, CITY, STATE, ZIP_CODE) VALUES
+(1, 'Luis', 'Gonzalez', '0981-111-222', 'luis.gonzalez@example.com', 'Av. Amazonas 123', 'Quito', 'Pichincha', '17015'),
+(2, 'Isabel', 'Martinez', '0981-222-333', 'isabel.martinez@example.com', 'Av. 6 de Diciembre 456', 'Guayaquil', 'Guayas', '09015'),
+(3, 'Jorge', 'Paredes', '0981-333-444', 'jorge.paredes@example.com', 'Calle Colón 789', 'Cuenca', 'Azuay', '01015'),
+(4, 'Natalia', 'Moreno', '0981-444-555', 'natalia.moreno@example.com', 'Calle Loja 101', 'Manta', 'Manabí', '13015'),
+(5, 'Andrés', 'Vásquez', '0981-555-666', 'andres.vasquez@example.com', 'Av. Machala 202', 'Ambato', 'Tungurahua', '18015');
+
+-- Insertar registros en STAFF
+INSERT INTO STAFF (STAFFID, FIRSTName, LASTName, EMAIL, PHONE, ACTIVE, STORE_ID, MANAGER_ID) VALUES
+(1, 'Juan', 'Perez', 'juan.perez@example.com', '0987-123-456', 1, 1, NULL),
+(2, 'Maria', 'Lopez', 'maria.lopez@example.com', '0987-234-567', 1, 1, 1),
+(3, 'Pedro', 'Garcia', 'pedro.garcia@example.com', '0987-345-678', 1, 2, NULL),
+(4, 'Ana', 'Morales', 'ana.morales@example.com', '0987-456-789', 1, 2, 3),
+(5, 'Carlos', 'Moreno', 'carlos.moreno@example.com', '0987-567-890', 1, 3, NULL);
+
+-- Insertar registros en ORDERS
+INSERT INTO ORDERS (ORDER_ID, CUSTOMER_ID, ORDER_STATUS, ORDER_DATE, REQUIRED_DATE, SHIPPED_DATE, STORE_ID, SATAFF_ID) VALUES
+(1, 1, 1, '2024-07-01', '2024-07-05', '2024-07-03', 1, 1),
+(2, 2, 2, '2024-07-02', '2024-07-06', NULL, 1, 2),
+(3, 3, 1, '2024-07-03', '2024-07-07', '2024-07-04', 2, 3),
+(4, 4, 2, '2024-07-04', '2024-07-08', NULL, 2, 4),
+(5, 5, 1, '2024-07-05', '2024-07-09', '2024-07-06', 3, 5);
+
+-- Insertar registros en ORDERS_ITEMS
+INSERT INTO ORDERS_ITEMS (ORDER_ID, ITEM_ID, PRODUCT_ID, QUANTITY, LIST_PRICE, DISCOUNT) VALUES
+(1, 1, 1, 1, 499.99, 0.00),       
+(1, 2, 2, 2, 899.99, 50.00),       
+(2, 1, 3, 1, 299.99, 10.00),       
+(3, 1, 4, 1, 1999.99, 100.00),     
+(4, 1, 5, 2, 1499.99, 75.00);      
+
+-- Insertar registros en SYSTEMUSER
+INSERT INTO SYSTEMUSER (UserID, USUARIO, PASS, ROLL, STAFF_ID) VALUES
+('user1', 'Maria Fernandez', 'pass2024', 'Admin', 1),
+('user2', 'Carlos Ramirez', 'secure456', 'Staff', 2),
+('user3', 'Ana Gomez', 'mypassword', 'Manager', 3),
+('user4', 'David Sanchez', 'admin101', 'Admin', 4),
+('user5', 'Lucia Torres', 'staff102', 'Staff', 5);
+
+ALTER TABLE ORDERS_ITEMS
+ALTER COLUMN DISCOUNT DECIMAL(5, 2);
+
+-- RF01: Autenticación de usuario
+
+DECLARE @UserID VARCHAR(10) = 'user1'; 
+DECLARE @Password VARCHAR(10) = 'pass2024';  
+
+IF EXISTS (SELECT * FROM SYSTEMUSER WHERE UserID = @UserID AND PASS = @Password)
+BEGIN
+    SELECT 'Autenticación del usuario exitosa. Los datos del usuario son:' AS Message,
+           USUARIO, PASS, ROLL, STAFF_ID
+    FROM SYSTEMUSER
+    WHERE UserID = @UserID;
+END
+ELSE
+BEGIN
+    SELECT 'El usuario no existe en el sistema' AS Message;
+END;
+
+-- RF02: Descontar el stock del inventario de productos
+
+SELECT * FROM STOCKS;
+
+DECLARE @ORDER_ID INT;
+DECLARE @PRODUCT_ID INT;
+DECLARE @QUANTITY INT;
+
+
+IF CURSOR_STATUS('GLOBAL', 'ORDER_CURSOR') >= 0
+BEGIN
+    CLOSE ORDER_CURSOR;
+    DEALLOCATE ORDER_CURSOR;
+END
+
+DECLARE ORDER_CURSOR CURSOR FOR
+SELECT ORDER_ID, PRODUCT_ID, QUANTITY
+FROM ORDERS_ITEMS;
+
+
+OPEN ORDER_CURSOR;
+
+
+FETCH NEXT FROM ORDER_CURSOR INTO @ORDER_ID, @PRODUCT_ID, @QUANTITY;
+
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    
+    UPDATE STOCKS
+    SET QUANTITY = QUANTITY - @QUANTITY
+    WHERE PRODUCT_ID = @PRODUCT_ID;
+
+  
+    FETCH NEXT FROM ORDER_CURSOR INTO @ORDER_ID, @PRODUCT_ID, @QUANTITY;
+END;
+
+
+CLOSE ORDER_CURSOR;
+
+DEALLOCATE ORDER_CURSOR;
+
+SELECT * FROM STOCKS;

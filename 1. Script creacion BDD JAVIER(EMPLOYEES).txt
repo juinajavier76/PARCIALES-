@@ -1,0 +1,132 @@
+create database JAVIER 
+
+
+CREATE TABLE departments (
+    dept_no INT PRIMARY KEY,
+    dept_name VARCHAR(40) NOT NULL
+);
+
+CREATE TABLE employees (
+    emp_no INT PRIMARY KEY,
+    birth_date DATE NOT NULL,
+    first_name VARCHAR(14) NOT NULL,
+    last_name VARCHAR(16) NOT NULL,
+    gender CHAR(1) NOT NULL,
+    hire_date DATE NOT NULL
+);
+
+
+CREATE TABLE salaries (
+    emp_no INT,
+    salary INT NOT NULL,
+    from_date DATE NOT NULL,
+    to_date DATE,
+    PRIMARY KEY (emp_no, from_date),
+    FOREIGN KEY (emp_no) REFERENCES employees(emp_no)
+);
+
+
+CREATE TABLE dept_emp (
+    emp_no INT,
+    dept_no INT,
+    from_date DATE NOT NULL,
+    to_date DATE NOT NULL,
+    PRIMARY KEY (emp_no, dept_no),
+    FOREIGN KEY (emp_no) REFERENCES employees(emp_no),
+    FOREIGN KEY (dept_no) REFERENCES departments(dept_no)
+);
+
+
+CREATE TABLE dept_manager (
+    emp_no INT,
+    dept_no INT,
+    from_date DATE NOT NULL,
+    to_date DATE NOT NULL,
+    PRIMARY KEY (emp_no, dept_no),
+    FOREIGN KEY (emp_no) REFERENCES employees(emp_no),
+    FOREIGN KEY (dept_no) REFERENCES departments(dept_no)
+);
+
+
+CREATE TABLE titles (
+    emp_no INT,
+    title VARCHAR(50) NOT NULL,
+    from_date DATE NOT NULL,
+    to_date DATE,
+    PRIMARY KEY (emp_no, title, from_date),
+    FOREIGN KEY (emp_no) REFERENCES employees(emp_no)
+);
+
+INSERT INTO departments (dept_no, dept_name) VALUES
+(1, 'Marketing'),
+(2, 'Finanzas'),
+(3, 'Recursos Humanos'),
+(4, 'Ingeniería'),
+(5, 'Ventas'),
+(6, 'TI'),
+(7, 'Atención al Cliente'),
+(8, 'Investigación y Desarrollo'),
+(9, 'Operaciones'),
+(10, 'Legal');
+
+
+INSERT INTO employees (emp_no, birth_date, first_name, last_name, gender, hire_date) VALUES
+(1001, '1980-01-01', 'Juan', 'Pérez', 'M', '2005-03-01'),
+(1002, '1985-05-15', 'Ana', 'García', 'F', '2007-07-10'),
+(1003, '1979-08-25', 'Luis', 'Rodríguez', 'M', '2006-11-20'),
+(1004, '1990-02-17', 'María', 'Fernández', 'F', '2009-12-01'),
+(1005, '1988-11-30', 'Carlos', 'Martínez', 'M', '2010-01-15'),
+(1006, '1992-04-14', 'Laura', 'Hernández', 'F', '2011-09-23'),
+(1007, '1983-09-21', 'Miguel', 'López', 'M', '2008-06-18'),
+(1008, '1975-12-12', 'Sandra', 'González', 'F', '2004-05-27'),
+(1009, '1982-07-19', 'Jorge', 'Sánchez', 'M', '2006-03-14'),
+(1010, '1991-10-05', 'Lucía', 'Ramírez', 'F', '2012-08-30');
+
+
+INSERT INTO salaries (emp_no, salary, from_date, to_date) VALUES
+(1001, 60000, '2005-03-01', NULL),
+(1002, 55000, '2007-07-10', NULL),
+(1003, 52000, '2006-11-20', NULL),
+(1004, 58000, '2009-12-01', NULL),
+(1005, 62000, '2010-01-15', NULL),
+(1006, 54000, '2011-09-23', NULL),
+(1007, 59000, '2008-06-18', NULL),
+(1008, 50000, '2004-05-27', NULL),
+(1009, 57000, '2006-03-14', NULL),
+(1010, 56000, '2012-08-30', NULL);
+
+INSERT INTO dept_emp (emp_no, dept_no, from_date, to_date) VALUES
+(1001, 1, '2005-03-01', '2010-03-01'),
+(1002, 2, '2007-07-10', '2012-07-10'),
+(1003, 3, '2006-11-20', '2011-11-20'),
+(1004, 4, '2009-12-01', '2014-12-01'),
+(1005, 5, '2010-01-15', '2015-01-15'),
+(1006, 6, '2011-09-23', '2016-09-23'),
+(1007, 7, '2008-06-18', '2013-06-18'),
+(1008, 8, '2004-05-27', '2009-05-27'),
+(1009, 9, '2006-03-14', '2011-03-14'),
+(1010, 10, '2012-08-30', '2017-08-30');
+
+INSERT INTO dept_manager (emp_no, dept_no, from_date, to_date) VALUES
+(1001, 1, '2010-03-01', '2015-03-01'),
+(1002, 2, '2012-07-10', '2017-07-10'),
+(1003, 3, '2011-11-20', '2016-11-20'),
+(1004, 4, '2014-12-01', '2019-12-01'),
+(1005, 5, '2015-01-15', '2020-01-15'),
+(1006, 6, '2016-09-23', '2021-09-23'),
+(1007, 7, '2013-06-18', '2018-06-18'),
+(1008, 8, '2009-05-27', '2014-05-27'),
+(1009, 9, '2011-03-14', '2016-03-14'),
+(1010, 10, '2017-08-30', '2022-08-30');
+
+INSERT INTO titles (emp_no, title, from_date, to_date) VALUES
+(1001, 'Gerente de Marketing', '2005-03-01', '2010-03-01'),
+(1002, 'Analista Financiero', '2007-07-10', '2012-07-10'),
+(1003, 'Especialista en RRHH', '2006-11-20', '2011-11-20'),
+(1004, 'Ingeniero de Software', '2009-12-01', '2014-12-01'),
+(1005, 'Ejecutivo de Ventas', '2010-01-15', '2015-01-15'),
+(1006, 'Soporte de TI', '2011-09-23', '2016-09-23'),
+(1007, 'Representante de Atención al Cliente', '2008-06-18', '2013-06-18'),
+(1008, 'Científico de Investigación', '2004-05-27', '2009-05-27'),
+(1009, 'Gerente de Operaciones', '2006-03-14', '2011-03-14'),
+(1010, 'Asesor Legal', '2012-08-30', '2017-08-30');

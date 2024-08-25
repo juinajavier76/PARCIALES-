@@ -1,0 +1,182 @@
+-- PASO 1: AGREGAR COMPONENTES EN LA BASE DE DATOS
+
+-- Inclusión de campos en la tabla 'employees'
+ALTER TABLE employees
+ADD correo VARCHAR(100);
+
+ALTER TABLE employees
+ADD identification VARCHAR(20) NOT NULL; 
+GO
+
+
+
+
+-- Creación de la tabla 'users' para almacenar las credenciales de los usuarios del sistema
+CREATE TABLE [dbo].[users] (
+    emp_no INT NOT NULL,               
+    usuario VARCHAR(100) NOT NULL,   
+    clave VARCHAR(200) NOT NULL,     
+    PRIMARY KEY CLUSTERED 
+    (
+        emp_no ASC                     -- Definir el número de empleado como clave primaria
+    )
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, 
+          ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) 
+    ON [PRIMARY]
+);
+GO
+
+
+
+
+
+-- Agregar la clave foránea que referencia a la tabla 'employees'
+ALTER TABLE [dbo].[users] WITH CHECK ADD FOREIGN KEY([emp_no])
+REFERENCES [dbo].[employees] ([emp_no]) -- Define 'emp_no' como clave foránea referenciando a 'employees'
+ON UPDATE CASCADE  -- Actualiza en cascada
+ON DELETE CASCADE; -- Elimina en cascada
+GO
+
+
+
+
+-- Registro de Datos en la tabla 'users'
+Insert Into users values (7, 'mlopez', 'abc123');
+Insert Into users values (8, 'jdoe', 'password2024');
+Insert Into users values (9, 'asantos', 'qwerty2024');
+GO
+
+
+
+
+
+-- Selección de datos combinados de las tablas 'employees' y 'users'
+SELECT e.identification, 
+       e.first_name + ' ' + e.last_name AS nombre, 
+       e.correo, 
+       u.usuario, 
+       u.clave
+FROM employees e 
+JOIN users u ON e.emp_no = u.emp_no -- Une las tablas 'employees' y 'users' en base al número de empleado
+WHERE e.identification = '1722373030'; -- Filtra por la cédula '1722373030'
+
+-- Selección de todos los datos de la tabla 'users'
+SELECT * FROM users;
+GO
+
+
+
+
+
+
+
+-- PASO 2: Crear el procedimiento almacenado para la autenticación de usuarios
+
+-- Crear o modificar el procedimiento almacenado
+CREATE PROCEDURE dbo.sp_ValidarUsuarios
+    @user VARCHAR(100),
+    @pass VARCHAR(100),
+    @id INT OUTPUT,
+    @mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+    -- Inicializar variables
+    DECLARE @IdStaff INT = NULL;
+
+    -- Verificar si el usuario y la contraseña existen
+    IF EXISTS (SELECT 1 FROM usuarios WHERE usuario = @user AND contraseña = @pass)
+    BEGIN
+        -- Obtener el número de empleado si existe
+        SELECT @IdStaff = numero_empleado
+        FROM usuarios
+        WHERE usuario = @user AND contraseña = @pass;
+
+        -- Si se encontró el número de empleado
+        IF @IdStaff IS NOT NULL
+        BEGIN
+            SET @mensaje = 'Código 1 - Autenticación exitosa';
+            SET @id = 1;
+        END
+        ELSE
+        BEGIN
+            SET @mensaje = 'Código 0 - El usuario no existe o ha ingresado mal las credenciales de acceso';
+            SET @id = 0;
+        END
+    END
+    ELSE
+    BEGIN
+        -- Usuario o contraseña incorrectos
+        SET @mensaje = 'Código 0 - El usuario no existe o ha ingresado mal las credenciales de acceso';
+        SET @id = 0;
+    END
+END;
+GO
+
+USE JAVIER;
+GO
+
+-- Verifica que el procedimiento almacenado existe
+SELECT *
+FROM sys.procedures
+WHERE name = 'sp_ValidarUsuarios';
+GO
+
+DECLARE @id INT, @mensaje VARCHAR(100);
+
+EXEC dbo.sp_ValidarUsuarios @user = 'javier', @pass = 'ister2024', @id = @id OUTPUT, @mensaje = @mensaje OUTPUT;
+
+SELECT @id AS id, @mensaje AS mensaje;
+
+
+
+-- PASO 3: Crear el procedimiento almacenado para el registro de usuarios
+
+CREATE OR ALTER PROCEDURE Sp_RegistrarUsuario (
+    @cedula VARCHAR(50),          -- Cédula, RUC o pasaporte del empleado
+    @nombre VARCHAR(50),          -- Nombre del empleado
+    @apellido VARCHAR(50),        -- Apellido del empleado
+    @correo VARCHAR(100),         -- Correo electrónico del empleado
+    @genero CHAR(1),              -- Género del empleado (M/F)
+    @fecha DATETIME,              -- Fecha de contratación del empleado
+    @clave VARCHAR(100),          -- Contraseña del usuario
+    @retorno INT OUTPUT,          -- Variable de salida para indicar el estado del registro (1 = éxito, 0 = fallo)
+    @mensaje VARCHAR(100) OUTPUT  -- Variable de salida para el mensaje de registro
+)
+AS
+BEGIN
+    DECLARE @pos1 INT;            -- almacena la posición del punto en el correo
+    DECLARE @pos2 INT;            --  arroba en el correo
+    DECLARE @usuario VARCHAR(50); -- nombre de usuario generado
+    DECLARE @id INT;              -- y número de empleado generado
+
+    -- Verifica si el correo y la cédula ya existen en la tabla 'employees'
+    IF NOT EXISTS (SELECT 1 FROM employees WHERE correo = @correo AND identification = @cedula)
+    BEGIN
+        -- Inserta los datos del empleado en la tabla 'employees'
+        INSERT INTO employees (birth_date, first_name, last_name, gender, hire_date, correo, identification)
+        VALUES (GETDATE(), @nombre, @apellido, @genero, @fecha, @correo, @cedula);
+
+        -- Recupera el número de empleado recién insertado
+        SELECT @id = emp_no FROM employees WHERE correo = @correo AND identification = @cedula;
+
+        -- Genera el nombre de usuario a partir del correo electrónico
+        SELECT @pos1 = CHARINDEX('.', @correo) + 1, @pos2 = CHARINDEX('@', @correo);
+        SELECT @usuario = CONCAT(SUBSTRING(@correo, 1, 1), SUBSTRING(@correo, @pos1, @pos2 - @pos1));
+
+        -- Inserta el nuevo usuario en la tabla 'users'
+        INSERT INTO users (emp_no, usuario, clave) VALUES (@id, @usuario, @clave);
+
+        -- Indica que el registro fue exitoso
+        SET @retorno = 1;
+        SET @mensaje = 'El usuario se ha registrado con éxito';
+        SELECT @retorno, @mensaje;
+    END
+    ELSE
+    BEGIN
+        -- Indica que el usuario ya está registrado
+        SET @retorno = 0;
+        SET @mensaje = 'Usuario ya está registrado';
+        SELECT @retorno, @mensaje;
+    END
+END;
+GO
